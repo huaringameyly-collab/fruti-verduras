@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mercado Mayorista: frutas y verduras en buen estado</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #26352a;
+      background: #f2f8ed;
+    }
+
+    body.modal-abierto { overflow: hidden; }
+
+    header {
+      padding: 42px 20px;
+      text-align: center;
+      color: white;
+      background: linear-gradient(135deg, #18794e, #71b841);
+      animation: aparecer 0.8s ease-out;
+    }
+
+    header h1 {
+      max-width: 850px;
+      margin: 0 auto 12px;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+    }
+
+    header p { margin: 0; font-size: 1.1rem; }
+
+    main { width: min(950px, 92%); margin: 28px auto; }
+
+    section {
+      padding: 22px;
+      margin-bottom: 22px;
+      border-radius: 18px;
+      background: white;
+      box-shadow: 0 5px 18px #234b2b18;
+      animation: subir 0.7s ease both;
+    }
+
+    h2 { color: #18794e; }
+
+    .pasos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+    }
+
+    .paso {
+      padding: 16px;
+      border-radius: 14px;
+      background: #f0f8e9;
+      transition: transform 0.2s;
+    }
+
+    .paso:hover { transform: translateY(-5px); }
+    .numero { font-size: 1.7rem; }
+    form { display: grid; gap: 14px; }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd8c9;
+      border-radius: 9px;
+      font: inherit;
+    }
+
+    textarea { min-height: 80px; resize: vertical; }
+
+    button {
+      border: none;
+      color: white;
+      background: #18804e;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    button:hover { background: #105e39; transform: scale(1.02); }
+
+    .aviso {
+      padding: 13px;
+      border-left: 5px solid #e2a72e;
+      border-radius: 8px;
+      background: #fff8e7;
+    }
+
+    #vistaPrevia {
+      display: none;
+      width: min(100%, 280px);
+      margin-top: 12px;
+      border-radius: 12px;
+    }
+
+    .tarjeta {
+      display: grid;
+      grid-template-columns: minmax(120px, 220px) 1fr;
+      gap: 16px;
+      padding: 16px;
+      margin-top: 14px;
+      border: 1px solid #e0eadc;
+      border-radius: 14px;
+      animation: aparecer 0.4s ease-out;
+    }
+
+    .tarjeta img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 10px;
+      background: #f0f8e9;
+    }
+
+    .tarjeta h3 { margin-top: 0; color: #18794e; }
+
+    .boton-llamar {
+      display: inline-block;
+      width: auto;
+      margin-top: 6px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      color: white;
+      background: #e56b16;
+      font-weight: bold;
+      text-decoration: none;
+      box-shadow: 0 3px 9px #b64d1744;
+    }
+
+    .boton-llamar:hover { background: #bf4f0d; }
+
+    footer { padding: 22px; text-align: center; color: #536352; }
+
+    /* Ventana inicial */
+    .capa-inicio {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: #102619bb;
+    }
+
+    .ventana-inicio {
+      width: min(430px, 100%);
+      padding: 25px;
+      border-radius: 18px;
+      background: white;
+      box-shadow: 0 12px 35px #0004;
+    }
+
+    .ventana-inicio h2 { margin-top: 0; }
+
+    .botones-inicio {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .boton-secundario { background: #42634a; }
+
+    .nota-pequena {
+      color: #5f6d60;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    #mensajeInicio {
+      min-height: 20px;
+      color: #18794e;
+      font-weight: bold;
+    }
+
+    @keyframes aparecer {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes subir {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      .tarjeta { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body class="modal-abierto">
+
+  <div class="capa-inicio" id="capaInicio">
+    <div class="ventana-inicio">
+      <h2>🍎 Bienvenido</h2>
+      <p>Inicia sesión de demostración o continúa para ver las publicaciones.</p>
+
+      <form id="formularioInicio">
+        <div>
+          <label for="usuario">Correo electrónico</label>
+          <input id="usuario" type="email" placeholder="nombre@correo.com" required>
+        </div>
+        <div>
+          <label for="clave">Contraseña</label>
+          <input id="clave" type="password" placeholder="Escribe cualquier contraseña" required>
+        </div>
+        <button type="submit">Iniciar sesión</button>
+      </form>
+
+      <div class="botones-inicio">
+        <button type="button" class="boton-secundario" id="activarNotificaciones">
+          🔔 Activar notificaciones
+        </button>
+        <button type="button" class="boton-secundario" id="continuar">
+          Continuar sin iniciar sesión
+        </button>
+      </div>
+
+      <p class="nota-pequena">
+        Esta demostración no guarda tus datos. Las notificaciones dependen del permiso
+        de tu dispositivo y navegador.
+      </p>
+      <p id="mensajeInicio" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <header>
+    <h1>🍎 Mercado Mayorista: frutas y verduras en buen estado</h1>
+    <p>Conectamos alimentos aprovechables con organizaciones que los necesitan.</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>¿Cómo funciona?</h2>
+      <div class="pasos">
+        <article class="paso">
+          <div class="numero">🧺</div>
+          <h3>1. El puesto publica</h3>
+          <p>El vendedor indica qué alimento ofrece, cuánta cantidad tiene y dónde recogerlo.</p>
+        </article>
+        <article class="paso">
+          <div class="numero">🔎</div>
+          <h3>2. La organización revisa</h3>
+          <p>Un albergue o asociación consulta las publicaciones disponibles.</p>
+        </article>
+        <article class="paso">
+          <div class="numero">🤝</div>
+          <h3>3. Coordinan el recojo</h3>
+          <p>Se comunican con el vendedor para acordar la hora y el lugar de entrega.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Publicar un alimento</h2>
+      <p>Completa los datos para que una organización pueda saber qué producto está disponible.</p>
+
+      <form id="formulario">
+        <div>
+          <label for="producto">Nombre de la fruta o verdura</label>
+          <input id="producto" required placeholder="Ejemplo: plátanos">
+        </div>
+        <div>
+          <label for="cantidad">Cantidad aproximada</label>
+          <input id="cantidad" required placeholder="Ejemplo: 10 kg">
+        </div>
+        <div>
+          <label for="puesto">Puesto o zona del mercado</label>
+          <input id="puesto" required placeholder="Ejemplo: puesto 24">
+        </div>
+        <div>
+          <label for="contacto">Contacto del vendedor</label>
+          <input id="contacto" required placeholder="Teléfono o forma de contacto">
+        </div>
+        <div>
+          <label for="horario">¿Hasta qué hora se puede recoger?</label>
+          <input id="horario" required placeholder="Ejemplo: hoy, hasta las 5 p. m.">
+        </div>
+        <div>
+          <label for="estado">Estado del alimento</label>
+          <select id="estado" required>
+            <option value="">Selecciona una opción</option>
+            <option>Maduro, pero apto para consumo</option>
+            <option>Con manchas superficiales, apto para consumo</option>
+            <option>Otro estado apto para consumo</option>
+          </select>
+        </div>
+        <div>
+          <label for="foto">Foto del producto (opcional)</label>
+          <input id="foto" type="file" accept="image/*">
+          <img id="vistaPrevia" alt="Vista previa de la foto">
+        </div>
+        <div>
+          <label for="detalles">Detalles adicionales</label>
+          <textarea id="detalles" placeholder="Agrega información útil para coordinar el recojo"></textarea>
+        </div>
+        <button type="submit">Publicar alimento</button>
+      </form>
+
+      <p class="aviso">
+        ⚠️ Publica solo alimentos aptos para el consumo. No incluyas productos con moho,
+        mal olor o señales de deterioro.
+      </p>
+    </section>
+
+    <section>
+      <h2>Alimentos disponibles</h2>
+      <div id="lista">
+        <p id="mensajeVacio">Todavía no hay alimentos publicados.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Proyecto escolar de Design Thinking · Aprovechar alimentos, apoyar a la comunidad
+  </footer>
+
+  <script>
+    const formulario = document.getElementById("formulario");
+    const lista = document.getElementById("lista");
+    const foto = document.getElementById("foto");
+    const vistaPrevia = document.getElementById("vistaPrevia");
+    const capaInicio = document.getElementById("capaInicio");
+    const mensajeInicio = document.getElementById("mensajeInicio");
+
+    let fotoSeleccionada = "";
+
+    function cerrarInicio() {
+      capaInicio.style.display = "none";
+      document.body.classList.remove("modal-abierto");
+    }
+
+    document.getElementById("continuar").addEventListener("click", cerrarInicio);
+
+    document.getElementById("formularioInicio").addEventListener("submit", function(evento) {
+      evento.preventDefault();
+      mensajeInicio.textContent = "Inicio de sesión de demostración.";
+      setTimeout(cerrarInicio, 700);
+    });
+
+    document.getElementById("activarNotificaciones").addEventListener("click", async function() {
+      if (!("Notification" in window)) {
+        mensajeInicio.textContent = "Este navegador no permite notificaciones.";
+        return;
+      }
+
+      try {
+        const permiso = await Notification.requestPermission();
+
+        if (permiso === "granted") {
+          mensajeInicio.textContent = "Notificaciones activadas para esta demostración.";
+          new Notification("Mercado Mayorista", {
+            body: "Te avisaremos cuando se publique un alimento mientras la página esté abierta."
+          });
+        } else {
+          mensajeInicio.textContent = "No se concedió permiso para las notificaciones.";
+        }
+      } catch {
+        mensajeInicio.textContent = "No se pudieron activar las notificaciones.";
+      }
+    });
+
+    foto.addEventListener("change", function() {
+      const archivo = foto.files[0];
+
+      if (!archivo) {
+        fotoSeleccionada = "";
+        vistaPrevia.style.display = "none";
+        return;
+      }
+
+      const lector = new FileReader();
+
+      lector.onload = function(evento) {
+        fotoSeleccionada = evento.target.result;
+        vistaPrevia.src = fotoSeleccionada;
+        vistaPrevia.style.display = "block";
+      };
+
+      lector.readAsDataURL(archivo);
+    });
+
+    formulario.addEventListener("submit", function(evento) {
+      evento.preventDefault();
+
+      const producto = document.getElementById("producto").value.trim();
+      const cantidad = document.getElementById("cantidad").value.trim();
+      const puesto = document.getElementById("puesto").value.trim();
+      const contacto = document.getElementById("contacto").value.trim();
+      const horario = document.getElementById("horario").value.trim();
+      const estado = document.getElementById("estado").value;
+      const detalles = document.getElementById("detalles").value.trim();
+
+      const mensajeVacio = document.getElementById("mensajeVacio");
+      if (mensajeVacio) mensajeVacio.remove();
+
+      const tarjeta = document.createElement("article");
+      tarjeta.className = "tarjeta";
+
+      const imagen = document.createElement("img");
+      imagen.alt = "Foto de " + producto;
+      imagen.src = fotoSeleccionada ||
+        "https://placehold.co/400x300/eaf5e5/287a48?text=Alimento";
+      tarjeta.appendChild(imagen);
+
+      const contenido = document.createElement("div");
+
+      const titulo = document.createElement("h3");
+      titulo.textContent = "🍊 " + producto;
+      contenido.appendChild(titulo);
+
+      const datos = [
+        "Cantidad: " + cantidad,
+        "Puesto o zona: " + puesto,
+        "Contacto: " + contacto,
+        "Recojo: " + horario,
+        "Estado: " + estado
+      ];
+
+      if (detalles) datos.push("Detalles: " + detalles);
+
+      datos.forEach(function(texto) {
+        const parrafo = document.createElement("p");
+        parrafo.textContent = texto;
+        contenido.appendChild(parrafo);
+      });
+
+      const numero = contacto.replace(/[^\d+]/g, "");
+      const pareceTelefono = /^\+?\d{7,15}$/.test(numero);
+
+      if (pareceTelefono) {
+        const botonLlamar = document.createElement("a");
+        botonLlamar.className = "boton-llamar";
+        botonLlamar.href = "tel:" + numero;
+        botonLlamar.textContent = "📞 Llamar al vendedor";
+        contenido.appendChild(botonLlamar);
+      }
+
+      tarjeta.appendChild(contenido);
+      lista.prepend(tarjeta);
+
+      formulario.reset();
+      fotoSeleccionada = "";
+      vistaPrevia.removeAttribute("src");
+      vistaPrevia.style.display = "none";
+    });
+  </script>
+</body>
+</html>
